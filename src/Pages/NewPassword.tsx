@@ -1,102 +1,70 @@
-import React, { useState } from "react";
-import { TextField, Box, Container, Typography, Grid } from "@mui/material";  // Import Grid from MUI correctly
+import { Grid, TextField, Box, Container, Typography } from "@mui/material";
+import { useState } from "react";
 import { useFormik } from "formik";
 import * as yup from "yup";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import LoadingButton from "@mui/lab/LoadingButton";
-import { useNewPasswordMutation } from "../Services/Users/usersApiSlice";
+import { useResetPasswordMutation } from "../Services/Users/usersApiSlice";
+import React from "react";
 
 const validationSchema = yup.object({
-  password: yup
-    .string()
-    .min(6, "Password should be of minimum 6 characters length")  // Fixed validation message
-    .max(16, "Password should be of maximum 16 characters length")
-    .required("Password is required"),
+  email: yup.string().email("Enter a valid email").required("Email is required"),
 });
 
-export const NewPassword = () => {
-  const [newPassword, { data, isLoading }] = useNewPasswordMutation();
-  const [passwordChanged, setPasswordChanged] = useState(false);
-
-  const { token } = useParams<{ token: string }>();
-  if (!token) {
-    throw new Error("Token is missing from the URL.");
-  }
+export const PasswordReset = () => {
+  const [resetPassword, { isLoading }] = useResetPasswordMutation();
+  const [linkSent, setLinkSent] = useState(false);
+  const navigate = useNavigate();
 
   const formik = useFormik({
-    initialValues: {
-      password: "",
-    },
-    validationSchema: validationSchema,
+    initialValues: { email: "" },
+    validationSchema,
     onSubmit: async (values) => {
-      console.log(values);
       try {
-        await newPassword({ password: values.password, token }).unwrap();
-        setPasswordChanged(true);
+        await resetPassword(values).unwrap();
+        setLinkSent(true);
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     },
   });
 
   return (
-    <Container component="section">
-      {passwordChanged && (
-        <Grid
-          container
-          height="90vh"
-          spacing={2}
-          direction="column"
-          justifyContent="center"
-          alignItems="center"
-        >
+    <Container maxWidth="xs" sx={{ display: "flex", height: "90vh", alignItems: "center", justifyContent: "center" }}>
+      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+        {linkSent ? (
           <Typography variant="h6" textAlign="center">
-            Password was changed successfully!
+            A link to change your password was sent to {formik.values.email}
           </Typography>
-        </Grid>
-      )}
-      {!passwordChanged && (
-        <Box component="form" method="POST" onSubmit={formik.handleSubmit}>
-          <Grid
-            container
-            height="90vh"
-            spacing={2}
-            direction="column"
-            justifyContent="center"
-            alignItems="center"
-          >
-            <Grid item xs={6}> {/* Changed this to 'item' */}
-              <Typography variant="h6" textAlign="center">
-                Enter your new password
-              </Typography>
-            </Grid>
-            <Grid item xs={6}> {/* Changed this to 'item' */}
-              <TextField
-                fullWidth
-                id="password"
-                name="password"
-                label="Password"
-                value={formik.values.password}
-                onChange={formik.handleChange}
-                error={formik.touched.password && Boolean(formik.errors.password)}
-                helperText={formik.touched.password && formik.errors.password}
-              />
-            </Grid>
-
-            <Grid item xs={6}> {/* Changed this to 'item' */}
-              <LoadingButton
-                color="primary"
-                variant="contained"
-                fullWidth
-                type="submit"
-                loading={isLoading}
-              >
-                Submit
-              </LoadingButton>
-            </Grid>
-          </Grid>
-        </Box>
-      )}
+        ) : (
+          <Box component="form" onSubmit={formik.handleSubmit} sx={{ width: "100%" }}>
+            <Typography variant="h5" sx={{ mb: 3, fontWeight: "bold", textAlign: "center" }}>
+              Reset Password
+            </Typography>
+            <TextField
+              fullWidth
+              id="email"
+              name="email"
+              label="Email"
+              margin="normal"
+              value={formik.values.email}
+              onChange={formik.handleChange}
+              error={formik.touched.email && Boolean(formik.errors.email)}
+              helperText={formik.touched.email && formik.errors.email}
+            />
+            <LoadingButton
+              color="primary"
+              variant="contained"
+              fullWidth
+              type="submit"
+              loading={isLoading}
+              sx={{ mt: 2 }}
+            >
+              Confirm
+            </LoadingButton>
+          </Box>
+        )}
+      </Box>
     </Container>
   );
 };

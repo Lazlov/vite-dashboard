@@ -1,11 +1,9 @@
-import {Grid, Button, TextField, Box, Container } from "@mui/material";
-// import Grid from "@mui/material/Grid2/";
- // Note the updated import for Grid2
-//  import Grid from "@mui/material"
+import { Grid, Button, TextField, Box, Container, Typography } from "@mui/material";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { useCreateUserMutation } from "../Services/Users/usersApiSlice";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
+import React from "react";
 
 export const Registration = () => {
   const [createUser, { isLoading: isCreating }] = useCreateUserMutation();
@@ -16,114 +14,77 @@ export const Registration = () => {
     password: yup
       .string()
       .required("This field is required")
-      .min(6, "Password should be of minimum 6 characters length")
-      .max(16, "Password should be of maximum 16 characters length"),
+      .min(6, "Password should be at least 6 characters long")
+      .max(16, "Password should be at most 16 characters long"),
     password_: yup
       .string()
       .required("This field is required")
-      .min(6, "Password should be of minimum 6 characters length")
-      .max(16, "Password should be of maximum 16 characters length")
-      .when("password", {
-        is: (val: string) => (val && val.length > 0 ? true : false),
-        then: yup.string().oneOf([yup.ref("password")], "Both passwords need to be the same"),
-      }),
+      .min(6, "Password should be at least 6 characters long")
+      .max(16, "Password should be at most 16 characters long")
+      .oneOf([yup.ref("password")], "Both passwords need to be the same"),
   });
 
   const formik = useFormik({
-    initialValues: {
-      email: "",
-      password: "",
-      password_: "",
-    },
-    validationSchema: validationSchema,
+    initialValues: { email: "", password: "", password_: "" },
+    validationSchema,
     onSubmit: async (values) => {
       try {
-        const payload = await createUser({
-          email: values.email,
-          password: values.password,
-        }).unwrap();
+        const payload = await createUser({ email: values.email, password: values.password }).unwrap();
         console.log("fulfilled", payload);
+        navigate("/login");
       } catch (error) {
         console.error("rejected", error);
-      } finally {
-        navigate("/login");
       }
     },
   });
 
   return (
-    <Container component="section">
-      <Box component="form" onSubmit={formik.handleSubmit}>
-        <Grid
-          container
-          height="90vh"
-          spacing={2}
-          direction="column"
-          justifyContent="center"
-          alignItems="center"
-        >
-          <Grid xs={12}>
-            <TextField
-              fullWidth
-              id="email"
-              name="email"
-              label="Email"
-              value={formik.values.email}
-              onChange={formik.handleChange}
-              error={formik.touched.email && Boolean(formik.errors.email)}
-              helperText={formik.touched.email && formik.errors.email}
-            />
-          </Grid>
-          <Grid xs={12}>
-            <TextField
-              fullWidth
-              id="password"
-              name="password"
-              label="Password"
-              type="password"
-              autoComplete="new-password"
-              value={formik.values.password}
-              onChange={formik.handleChange}
-              error={formik.touched.password && Boolean(formik.errors.password)}
-              helperText={formik.touched.password && formik.errors.password}
-            />
-          </Grid>
-          <Grid xs={12}>
-            <TextField
-              fullWidth
-              id="password_"
-              name="password_"
-              label="Confirm password"
-              type="password"
-              autoComplete="new-password"
-              value={formik.values.password_}
-              onChange={formik.handleChange}
-              error={formik.touched.password_ && Boolean(formik.errors.password_)}
-              helperText={formik.touched.password_ && formik.errors.password_}
-            />
-          </Grid>
-          <Grid xs={12}>
-            <Button
-              color="primary"
-              variant="contained"
-              fullWidth
-              type="submit"
-              disabled={isCreating}
-            >
-              Submit
-            </Button>
-          </Grid>
-          <Grid xs={12}>
-            <Button
-              sx={{ textTransform: "none" }}
-              color="primary"
-              component={RouterLink}
-              to="/login"
-            >
-              Already have an account?
-            </Button>
-          </Grid>
-        </Grid>
+    <Container maxWidth="xs" sx={{ display: "flex", height: "90vh", alignItems: "center", justifyContent: "center" }}>
+      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+       
+        <Box component="form" onSubmit={formik.handleSubmit} sx={{ width: "100%" }}>
+          <TextField
+            fullWidth
+            id="email"
+            name="email"
+            label="Email"
+            margin="normal"
+            value={formik.values.email}
+            onChange={formik.handleChange}
+            error={formik.touched.email && Boolean(formik.errors.email)}
+            helperText={formik.touched.email && formik.errors.email}
+          />
+          <TextField
+            fullWidth
+            id="password"
+            name="password"
+            label="Password"
+            type="password"
+            margin="normal"
+            value={formik.values.password}
+            onChange={formik.handleChange}
+            error={formik.touched.password && Boolean(formik.errors.password)}
+            helperText={formik.touched.password && formik.errors.password}
+          />
+          <TextField
+            fullWidth
+            id="password_"
+            name="password_"
+            label="Confirm Password"
+            type="password"
+            margin="normal"
+            value={formik.values.password_}
+            onChange={formik.handleChange}
+            error={formik.touched.password_ && Boolean(formik.errors.password_)}
+            helperText={formik.touched.password_ && formik.errors.password_}
+          />
+          <Button color="primary" variant="contained" fullWidth type="submit" disabled={isCreating} sx={{ mt: 2, mb: 2 }}>
+            Sign Up
+          </Button>
+          <Button component={RouterLink} to="/login" sx={{ textTransform: "none", display: "block", textAlign: "center" }}>
+            Already have an account?
+          </Button>
+        </Box>
       </Box>
     </Container>
   );

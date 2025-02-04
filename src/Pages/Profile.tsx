@@ -1,3 +1,4 @@
+import React from "react";
 import { useAuth } from "../Components/useAuth";
 
 export const Profile = () => {
