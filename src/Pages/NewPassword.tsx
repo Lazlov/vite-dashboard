@@ -11,7 +11,7 @@ const validationSchema = yup.object({
   email: yup.string().email("Enter a valid email").required("Email is required"),
 });
 
-export const PasswordReset = () => {
+export const NewPassword = () => {
   const [resetPassword, { isLoading }] = useResetPasswordMutation();
   const [linkSent, setLinkSent] = useState(false);
   const navigate = useNavigate();
